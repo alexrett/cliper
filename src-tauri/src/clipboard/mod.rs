@@ -118,39 +118,43 @@ fn handle_change(pb: id, db: Arc<Database>, crypto: Arc<KeyManager>) -> Result<(
 #[cfg(target_os = "macos")]
 fn read_file_urls(pb: id) -> Vec<String> {
     unsafe {
-        let items: id = msg_send![pb, pasteboardItems];
-        if items == nil {
-            return vec![];
-        }
-        let count: u64 = msg_send![items, count];
-        if count == 0 {
-            return vec![];
-        }
-        let ty: id = NSString::alloc(nil).init_str("public.file-url");
+        // Prefer native NSURL read to resolve file reference urls like /.file/id=...
+        let classes: id = msg_send![class!(NSArray), arrayWithObject: class!(NSURL)];
+        let urls: id = msg_send![pb, readObjectsForClasses: classes options: nil];
         let mut out = Vec::new();
+        if urls != nil {
+            let ucount: u64 = msg_send![urls, count];
+            for i in 0..ucount {
+                let url: id = msg_send![urls, objectAtIndex: i];
+                let is_file: bool = msg_send![url, isFileURL];
+                if is_file {
+                    let path_ns: id = msg_send![url, path];
+                    if path_ns != nil {
+                        let cstr: *const std::os::raw::c_char = msg_send![path_ns, UTF8String];
+                        if !cstr.is_null() {
+                            let s = std::ffi::CStr::from_ptr(cstr).to_string_lossy().into_owned();
+                            if !s.is_empty() { out.push(s); }
+                        }
+                    }
+                }
+            }
+            if !out.is_empty() { return out; }
+        }
+        // Fallback to reading string for type
+        let items: id = msg_send![pb, pasteboardItems];
+        if items == nil { return out; }
+        let count: u64 = msg_send![items, count];
+        if count == 0 { return out; }
+        let ty: id = NSString::alloc(nil).init_str("public.file-url");
         for i in 0..count {
             let item: id = msg_send![items, objectAtIndex: i];
             let s: id = msg_send![item, stringForType: ty];
             if s != nil {
                 let cstr: *const std::os::raw::c_char = msg_send![s, UTF8String];
                 if cstr.is_null() { continue; }
-                let mut raw = std::ffi::CStr::from_ptr(cstr).to_string_lossy().into_owned();
-                raw = raw.trim().to_string();
-                let mut pushed = false;
-                if raw.starts_with("file:") {
-                    if let Ok(u) = url::Url::parse(&raw) {
-                        if let Ok(p) = u.to_file_path() {
-                            out.push(p.to_string_lossy().to_string());
-                            pushed = true;
-                        }
-                    }
-                }
-                if !pushed {
-                    let tmp = raw
-                        .trim_start_matches("file://localhost")
-                        .trim_start_matches("file://");
-                    let decoded = urlencoding::decode(tmp).unwrap_or_else(|_| tmp.into());
-                    out.push(decoded.to_string());
+                let raw = std::ffi::CStr::from_ptr(cstr).to_string_lossy().into_owned();
+                if let Ok(u) = url::Url::parse(&raw) {
+                    if let Ok(p) = u.to_file_path() { out.push(p.to_string_lossy().to_string()); }
                 }
             }
         }
