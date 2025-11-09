@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/1",
+  "package": {
+    "productName": "Cliper",
+    "version": "0.1.0"
+  },
+  "build": {
+    "beforeDevCommand": "sh -lc 'set -e; if [ -d ui ]; then cd ui; else cd ../ui; fi; if [ ! -d node_modules ]; then (npm ci || npm install); fi; npm run dev'",
+    "beforeBuildCommand": "sh -lc 'set -e; if [ -d ui ]; then cd ui; else cd ../ui; fi; (npm ci || npm install); npm run build; cd - >/dev/null; mkdir -p icons; B64=iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO5W2tQAAAAASUVORK5CYII=; (printf %s $B64 | base64 -D -o icons/icon.png 2>/dev/null) || (printf %s $B64 | base64 --decode > icons/icon.png)'",
+    "devPath": "http://localhost:5173",
+    "distDir": "../ui/dist"
+  },
+  "tauri": {
+    "macOSPrivateApi": true,
+    "systemTray": {
+      "iconPath": "icons/icon.png"
+    },
+    "allowlist": {
+      "globalShortcut": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.example.cliper",
+      "macOS": {
+        "entitlements": "entitlements.plist",
+        "exceptionDomain": "",
+        "hardenedRuntime": true,
+        "signingIdentity": null
+      }
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Cliper",
+        "width": 720,
+        "height": 420,
+        "transparent": true,
+        "decorations": false,
+        "resizable": false,
+        "alwaysOnTop": false,
+        "fullscreen": false,
+        "focus": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}
