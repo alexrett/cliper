@@ -138,7 +138,3 @@ Frontend (`ui/`):
 - Clipboard poller is a background thread on macOS to avoid `!Send` issues
 - Items are deduplicated by `(kind, sha256, file_path)`
 - Thumbnails are generated on demand when the UI asks for an image preview
-
----
-
-Happy clipping! If you want me to adjust the corner radius, show file size next to path, or add a proper tray menu (Show/Hide, Preferences…, Quit), just ask.
