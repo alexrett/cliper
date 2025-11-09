@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use ring::aead::{self, Aad, LessSafeKey, UnboundKey, AES_256_GCM, Nonce};
+use ring::aead::{Aad, LessSafeKey, UnboundKey, AES_256_GCM, Nonce};
 use ring::rand::{SecureRandom, SystemRandom};
 use security_framework::passwords::{get_generic_password, set_generic_password, delete_generic_password};
 use zeroize::{Zeroize, Zeroizing};

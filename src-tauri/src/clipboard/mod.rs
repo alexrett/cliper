@@ -1,5 +1,5 @@
 use crate::crypto::KeyManager;
-use crate::db::{self, Database, NewItem};
+use crate::db::{Database, NewItem};
 use anyhow::{anyhow, Result};
 use arboard::{Clipboard, ImageData};
 use image::ImageFormat;

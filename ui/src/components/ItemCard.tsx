@@ -72,13 +72,12 @@ function PreviewImage({ id }: { id: number }) {
   const [src, setSrc] = React.useState<string | null>(null)
   React.useEffect(() => {
     let alive = true
-    import('@tauri-apps/api/tauri').then(({ invoke }) => {
-      invoke<string>('get_image_preview', { id, max: 128 }).then((data) => {
-        if (alive) setSrc(data)
-      }).catch(() => {})
-    })
+    tauriInvoke<string>('get_image_preview', { id, max: 128 }).then((data) => {
+      if (alive) setSrc(data)
+    }).catch(() => {})
     return () => { alive = false }
   }, [id])
   if (!src) return null
   return <img src={src} alt="preview" style={{ maxWidth: 128, maxHeight: 96, borderRadius: 6, marginTop: 6 }} />
 }
+import { invoke as tauriInvoke } from '@tauri-apps/api/tauri'

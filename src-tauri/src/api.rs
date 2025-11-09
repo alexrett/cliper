@@ -1,5 +1,4 @@
-use crate::{clipboard, db};
-use anyhow::Result;
+use crate::clipboard;
 use tauri::{Manager, State, GlobalShortcutManager};
 use image::GenericImageView;
 use base64::Engine;
